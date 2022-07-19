@@ -1,0 +1,14 @@
+/* Modifica backround-ul butonului de placeholder din inputFile */
+  .form-control {background-color: #fff !important;}
+      
+/* Modifica culoarea progress-bar-ului */
+  .progress-bar {background-color: #ff007b;}
+
+.down-link-3-column_padding {
+  margin-top: 12px;
+  text-align: left;
+}
+
+
+body > div.wrapper > nav > ul:nth-child(1) > li > a > i {color: #ff007b;}
+      
