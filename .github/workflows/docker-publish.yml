@@ -40,5 +40,5 @@ jobs:
       uses: docker/build-push-action@v2
       with:
           push: true
-          tags: ghcr.io/fizic37/AnalizaGarantii:latest  #${{ steps.docker_meta.outputs.tags }}
+          tags: ghcr.io/fizic37/analiza-garantii:latest  #${{ steps.docker_meta.outputs.tags }}
           file: ./Dockerfile
