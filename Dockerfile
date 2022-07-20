@@ -10,6 +10,7 @@ RUN Rscript -e 'remotes::install_version("config",upgrade="never", version = "0.
 RUN Rscript -e 'remotes::install_version("testthat",upgrade="never", version = "3.0.4")'
 RUN Rscript -e 'remotes::install_version("golem",upgrade="never", version = "0.3.3")'
 RUN Rscript -e 'remotes::install_version("bs4Dash",upgrade="never", version = "2.1.0")'
+RUN Rscript -e 'remotes::install_version("renv",upgrade="never", version = "0.15.5")'
 RUN mkdir /build_zone
 ADD . /build_zone
 WORKDIR /build_zone
