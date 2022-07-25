@@ -77,19 +77,20 @@ mod_crc_new_server <- function(id){
     
     output$down_crc_prelucrat <- downloadHandler(filename = function() {paste0(nume_beneficiar(), ".csv")},
           content = function(file) {
-      write.table(x = text_read()[1:index_begin_risc_global()],file = file,quote = F,col.names = F, row.names =FALSE )
+      write.table(x = text_read()[1:index_begin_risc_global()],file = file,quote = F,col.names = F, row.names =FALSE,
+                  fileEncoding =  "UTF-8")
       
       
-      write.table(x = coloane_finale(),append = TRUE,
+      write.table(x = coloane_finale(),append = TRUE,fileEncoding =  "UTF-8",
                   file = file,quote = F,col.names = F, row.names =FALSE)
       
-      write.table(x = risc_global(),append = TRUE,col.names = FALSE,
+      write.table(x = risc_global(),append = TRUE,col.names = FALSE,fileEncoding =  "UTF-8",
                   file = file,sep = ";",row.names = F,quote = F)
       
-      write.table(x = text_read()[(index_begin_istoric()-1):length(text_read())],
+      write.table(x = text_read()[(index_begin_istoric()-1):length(text_read())], fileEncoding =  "UTF-8",
                   file = file,quote = F,col.names = F, row.names =FALSE, append = TRUE)
-      
-      })
+     
+     })
     
   })
 }
