@@ -16,9 +16,11 @@ mod_crc_new_ui <- function(id){
                fluidRow(
                  column(width = 4, fileInput(ns("crc_input"),"Upload interogarea CRC",accept = ".csv",
                                              buttonLabel = "CSV only",placeholder = "No file uploaded")),
-                 column(width = 4, uiOutput(ns("show_down"))),
+                 column(width = 8, uiOutput(ns("show_down"))),
                  
-                 column(width = 4, verbatimTextOutput(ns("success_message")))))
+                 column(width = 12, DT::dataTableOutput(ns("sinteza_crc")))
+                 
+                 ))
 }
     
 #' crc_new Server Functions
@@ -44,29 +46,68 @@ mod_crc_new_server <- function(id){
       
       stringr::str_which(string = text_read(),pattern = "II. Riscul global") })
   
+    is_risc_global <- reactive({ req( text_read() )
+      ifelse(length( stringr::str_which(string = text_read(),pattern = "II. Riscul global")) == 0,"NO","YES")
+    })
+    
     
     index_begin_istoric <- reactive({ req( text_read() )
-            stringr::str_which(string = text_read(),pattern = "IIIa. Istoricul") })
+                stringr::str_which(string = text_read(),pattern = "IIIa. Istoricul") })
     
-    risc_global <- reactive({ req( text_read() )
-      text_read()[(index_begin_risc_global()+4):(index_begin_istoric()-2)] %>%
-        stringr::str_split(pattern = ";", simplify = T) %>% as.data.frame() %>% dplyr::select(-26) 
+    
+    denumiri_coloane <- reactive({ req( text_read(), index_begin_risc_global() )
+      text_read()[( index_begin_risc_global()+1):(index_begin_risc_global()+3)] %>% 
+        stringr::str_split(pattern = ";", simplify = T) %>% as.data.frame() %>% dplyr::select(-dplyr::starts_with("V26"))  })
+    
+    risc_global <- reactive({ req( text_read(),denumiri_coloane()  )
+     text_read()[(index_begin_risc_global()+4):(index_begin_istoric()-2)] %>%
+        stringr::str_split(pattern = ";", simplify = T) %>% as.data.frame() %>% dplyr::select(-dplyr::starts_with("V26")) %>%
+        setNames(object = .,nm = purrr::map_chr(denumiri_coloane(), ~paste0(.x,collapse = " ") %>% 
+                                                  stringr::str_trim(string = .,side = "both"))) %>%
+        dplyr::mutate(dplyr::across(.cols = dplyr::contains("Suma"), ~as.numeric(.x)))
+    })
+    
+    
+    
+    sinteza_crc <- reactive({ req( is_risc_global() == "YES" )
+      
+      risc_global() %>% dplyr::group_by(`Serviciul datoriei`) %>% 
+        dplyr::summarise(Total_suma_datorata = sum(`Total suma datorata`),
+                         Total_suma_utilizata = sum(`Suma datorata utilizata`),
+        Ponderi_suma_utilizata = sum(`Suma datorata utilizata`)/sum(risc_global()$`Suma datorata utilizata`)) %>%
+        dplyr::mutate( Ponderi_serv_datorie = ifelse(`Serviciul datoriei`=="A",0.5,ifelse(
+          `Serviciul datoriei`== "B",0.25, ifelse(`Serviciul datoriei`=="C",0.15, ifelse(`Serviciul datoriei`=="D",0.1,0)) ))) %>%
+        dplyr::mutate(Scor_serv_datorie = Ponderi_serv_datorie * Ponderi_suma_utilizata)
+        
       })
     
-    
-    denumiri_coloane <- reactive({ req( text_read() )
-      text_read()[(index_begin_risc_global()+1):(index_begin_risc_global()+3)] %>% 
-        stringr::str_split(pattern = ";", simplify = T) %>% as.data.frame() %>% dplyr::select(-26)  })
+    caption_sinteza <- reactive({ req(sinteza_crc(),nume_beneficiar()  )
+      paste0( "Sinteza fisier CRC pentru beneficiarul ", nume_beneficiar(), ". Scorul serviciului datoriei este ",
+            ifelse(sum(risc_global()$`Suma datorata utilizata`)==0,0.5, round(sum(sinteza_crc()$Scor_serv_datorie),6))
+            )     })
     
     coloane_finale <- reactive({ req( text_read() )
       c(denumiri_coloane() %>% dplyr::slice(1) %>% paste0(collapse = ";"),
         denumiri_coloane() %>% dplyr::slice(2) %>% paste0(collapse = ";"),
         denumiri_coloane() %>% dplyr::slice(3) %>% paste0(collapse = ";")) })
     
-    output$show_down <- renderUI( { req( text_read(),index_begin_risc_global(),index_begin_istoric(), risc_global(),
-                                         denumiri_coloane(), coloane_finale())
-      div(style= "padding-top:25px; padding-left: 35px;",
-      shinyWidgets::downloadBttn(ns("down_crc_prelucrat"),label = "Download CRC pentru web plafon",
+    output$sinteza_crc <-   DT::renderDataTable({  req( is_risc_global() )
+      switch( EXPR = is_risc_global(),
+          "YES" =  DT::datatable( data = sinteza_crc() %>% dplyr::select(1:4) %>% janitor::adorn_totals(where = "row"),
+          rownames = FALSE, options = list(dom = "Bt", buttons = c("copy", "excel")),extensions = "Buttons",
+          caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left;', caption_sinteza()) ) %>% 
+          DT::formatRound(columns = 2:3, digits = 1) %>% DT::formatPercentage(columns = 4, digits = 1),
+          "NO" = DT::datatable(data = data.frame('Am citit din fisierul uploadat' = text_read(),check.names = FALSE),
+          rownames = FALSE, options = list(dom="t"),
+          caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left; color: #ff007b;',
+                "STOP, nu am putut prelucra riscul global")
+      ) )
+      })
+    
+    output$show_down <- renderUI( { req( text_read(),index_begin_risc_global(),index_begin_istoric(),
+                    risc_global(),nume_beneficiar(), denumiri_coloane(), coloane_finale())
+      div(style= "padding-top:25px; padding-left: 125px;",
+      shinyWidgets::downloadBttn(ns("down_crc_prelucrat"),label = nume_beneficiar(),
                                  style = "stretch",color = "primary") )
     }) 
     
