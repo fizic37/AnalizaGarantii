@@ -31,7 +31,7 @@ mod_crc_new_server <- function(id){
     ns <- session$ns
     library(magrittr)
     text_read <- eventReactive(input$crc_input,{
-      text_read  <- readLines(input$crc_input$datapath) })
+      text_read  <- readLines( input$crc_input$datapath, encoding = "native.enc" ) })
     
     index_begin_date_identificare <- reactive({ req(text_read())
       stringr::str_which(string = text_read(),pattern = "I. Date de identificare") })
