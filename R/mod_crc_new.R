@@ -42,6 +42,10 @@ mod_crc_new_server <- function(id){
       }) 
       },error = function() {"prelucrat"} )
     
+    cui_beneficiar <- reactive({ req(text_read(), index_begin_date_identificare())
+      (text_read()[index_begin_date_identificare()+3] %>% stringr::str_split(pattern = ";",simplify = T))[1]
+      })
+    
     index_begin_risc_global <- reactive({ req( text_read() )
       
       stringr::str_which(string = text_read(),pattern = "II. Riscul global") })
@@ -82,7 +86,7 @@ mod_crc_new_server <- function(id){
       })
     
     caption_sinteza <- reactive({ req(sinteza_crc(),nume_beneficiar()  )
-      paste0( "Sinteza fisier CRC pentru beneficiarul ", nume_beneficiar(), ". Scorul serviciului datoriei este ",
+      paste0( "Sinteza fisier CRC pentru beneficiarul ", nume_beneficiar(), ", CUI ",cui_beneficiar(), ". Scorul serviciului datoriei este ",
             ifelse(sum(risc_global()$`Suma datorata utilizata`)==0,0.5, round(sum(sinteza_crc()$Scor_serv_datorie),6))
             )     })
     
@@ -119,16 +123,16 @@ mod_crc_new_server <- function(id){
     output$down_crc_prelucrat <- downloadHandler(filename = function() {paste0(nume_beneficiar(), ".csv")},
           content = function(file) {
       write.table(x = text_read()[1:index_begin_risc_global()],file = file,quote = F,col.names = F, row.names =FALSE,
-                  fileEncoding =  "UTF-8")
+                  fileEncoding =  "native.enc")
       
       
-      write.table(x = coloane_finale(),append = TRUE,fileEncoding =  "UTF-8",
+      write.table(x = coloane_finale(),append = TRUE,fileEncoding =  "native.enc",
                   file = file,quote = F,col.names = F, row.names =FALSE)
       
-      write.table(x = risc_global(),append = TRUE,col.names = FALSE,fileEncoding =  "UTF-8",
+      write.table(x = risc_global(),append = TRUE,col.names = FALSE,fileEncoding =  "native.enc",
                   file = file,sep = ";",row.names = F,quote = F)
       
-      write.table(x = text_read()[(index_begin_istoric()-1):length(text_read())], fileEncoding =  "UTF-8",
+      write.table(x = text_read()[(index_begin_istoric()-1):length(text_read())], fileEncoding =  "native.enc",
                   file = file,quote = F,col.names = F, row.names =FALSE, append = TRUE)
      
      })
