@@ -14,7 +14,10 @@ Imports:
     dplyr,
     DT,
     golem (>= 0.3.1),
+    htmltools,
+    janitor,
     magrittr,
+    purrr,
     shiny (>= 1.6.0),
     shinyWidgets,
     stringr
