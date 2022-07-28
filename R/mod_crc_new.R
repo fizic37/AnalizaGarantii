@@ -32,7 +32,7 @@ mod_crc_new_server <- function(id){
     
     options(scipen=999) # Very, very important. It does not work otherwise.
     
-    encoding <- "ASCII"
+    encoding <- "UTF-8"
     
     text_read <- eventReactive(input$crc_input,{
       text_read  <- readLines( input$crc_input$datapath) })
