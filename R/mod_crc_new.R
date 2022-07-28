@@ -29,9 +29,13 @@ mod_crc_new_ui <- function(id){
 mod_crc_new_server <- function(id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
-    library(magrittr)
+    
+    options(scipen=999) # Very, very important. It does not work otherwise.
+    
+    encoding <- "ASCII"
+    
     text_read <- eventReactive(input$crc_input,{
-      text_read  <- readLines( input$crc_input$datapath, encoding = "native.enc" ) })
+      text_read  <- readLines( input$crc_input$datapath) })
     
     index_begin_date_identificare <- reactive({ req(text_read())
       stringr::str_which(string = text_read(),pattern = "I. Date de identificare") })
@@ -123,17 +127,17 @@ mod_crc_new_server <- function(id){
     output$down_crc_prelucrat <- downloadHandler(filename = function() {paste0(nume_beneficiar(), ".csv")},
           content = function(file) {
       write.table(x = text_read()[1:index_begin_risc_global()],file = file,quote = F,col.names = F, row.names =FALSE,
-                  fileEncoding =  "native.enc")
+                  fileEncoding =  encoding )
       
       
-      write.table(x = coloane_finale(),append = TRUE,fileEncoding =  "native.enc",
-                  file = file,quote = F,col.names = F, row.names =FALSE)
+      write.table(x = coloane_finale(),append = TRUE,fileEncoding =  encoding,
+                  file = file,quote = F,col.names = F, row.names =FALSE )
       
-      write.table(x = risc_global(),append = TRUE,col.names = FALSE,fileEncoding =  "native.enc",
-                  file = file,sep = ";",row.names = F,quote = F)
+      write.table(x = risc_global(),append = TRUE,col.names = FALSE,fileEncoding = encoding,
+                  file = file,sep = ";",row.names = F,quote = F )
       
-      write.table(x = text_read()[(index_begin_istoric()-1):length(text_read())], fileEncoding =  "native.enc",
-                  file = file,quote = F,col.names = F, row.names =FALSE, append = TRUE)
+      write.table(x = text_read()[(index_begin_istoric()-1):length(text_read())], fileEncoding =  encoding,
+                  file = file,quote = F,col.names = F, row.names =FALSE, append = TRUE )
      
      })
     
