@@ -32,7 +32,7 @@ mod_crc_new_server <- function(id){
     
     options(scipen=999) # Very, very important. It does not work otherwise.
     
-    encoding <- "UTF-8"
+    #encoding <- "UTF-8"
     
     text_read <- eventReactive(input$crc_input,{
       text_read  <- readLines( input$crc_input$datapath) })
@@ -126,17 +126,16 @@ mod_crc_new_server <- function(id){
     
     output$down_crc_prelucrat <- downloadHandler(filename = function() {paste0(nume_beneficiar(), ".csv")},
           content = function(file) {
-      write.table(x = text_read()[1:index_begin_risc_global()],file = file,quote = F,col.names = F, row.names =FALSE,
-                  fileEncoding =  encoding )
+      write.table(x = text_read()[1:index_begin_risc_global()],file = file,quote = F,col.names = F, row.names =FALSE )
       
       
-      write.table(x = coloane_finale(),append = TRUE,fileEncoding =  encoding,
+      write.table(x = coloane_finale(),append = TRUE,
                   file = file,quote = F,col.names = F, row.names =FALSE )
       
-      write.table(x = risc_global(),append = TRUE,col.names = FALSE,fileEncoding = encoding,
+      write.table(x = risc_global(),append = TRUE,col.names = FALSE, 
                   file = file,sep = ";",row.names = F,quote = F )
       
-      write.table(x = text_read()[(index_begin_istoric()-1):length(text_read())], fileEncoding =  encoding,
+      write.table(x = text_read()[(index_begin_istoric()-1):length(text_read())],
                   file = file,quote = F,col.names = F, row.names =FALSE, append = TRUE )
      
      })
